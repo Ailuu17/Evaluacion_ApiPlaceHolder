@@ -1,35 +1,50 @@
+let users = [];
+const lista = document.getElementById('mostrarLista');
+const searchInput = document.getElementById('search');
+
 async function fetchUsers() {
     try {
         const response = await fetch('https://jsonplaceholder.typicode.com/users');
-        const users = await response.json();
+        users = await response.json();
         displayUsers(users);
     } catch (error) {
         console.error('Error fetching user data:', error);
     }
 }
 
-function displayUsers(users) {
-    document.getElementById('mostrarLista').innerHTML = '';
-    users.forEach(user => {
+function displayUsers(userArray) {
+    lista.innerHTML = '';
+    userArray.forEach(user => {
         const userItem = document.createElement('div');
         userItem.classList.add('user-item');
         userItem.textContent = `${user.name} - ${user.email}`;
-        userItem.addEventListener('click', () => Detalles(user));
-        document.getElementById('mostrarLista').appendChild(userItem);
+        userItem.addEventListener('click', () => showDetails(user, userItem));
+        lista.appendChild(userItem);
     });
 }
 
-function Detalles(user) {
-    alert(`Username: ${user.username}\nPhone: ${user.phone}\nCompany: ${user.company.name}`);
+function showDetails(user, userItem) {
+    // Remove previous details
+    const prevDetails = userItem.querySelector('.user-details');
+    if (prevDetails) prevDetails.remove();
+
+    const details = document.createElement('div');
+    details.classList.add('user-details');
+    details.innerHTML = `
+        <strong>Username:</strong> ${user.username}<br>
+        <strong>Phone:</strong> ${user.phone}<br>
+        <strong>Company:</strong> ${user.company.name}
+    `;
+    userItem.appendChild(details);
+    details.style.display = 'block';
 }
 
-document.getElementById('search').addEventListener('input', () => {
-    const searchTerm = document.getElementById('search').value.toLowerCase();
-    const userItems = document.querySelectorAll('.user-item');
-    userItems.forEach(item => {
-        const userName = item.textContent.toLowerCase();
-        item.style.display = userName.includes(searchTerm) ? 'block' : 'none';
-    });
+searchInput.addEventListener('input', () => {
+    const searchTerm = searchInput.value.toLowerCase();
+    const filtered = users.filter(user =>
+        user.name.toLowerCase().includes(searchTerm)
+    );
+    displayUsers(filtered);
 });
 
 fetchUsers();
